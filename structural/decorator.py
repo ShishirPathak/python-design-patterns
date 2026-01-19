@@ -5,34 +5,59 @@ When to use: You want to extend functionality at runtime.
 When not to use: Simple inheritance or direct changes are sufficient.
 """
 
-class Notifier:
-    def send(self, message):
-        raise NotImplementedError
+from __future__ import annotations
+from abc import ABC, abstractmethod
 
+#1 component (interface)
+class Component(ABC):
+    @abstractmethod
+    def execute(self):
+        pass
 
-class EmailNotifier(Notifier):
-    def send(self, message):
-        return f"Email: {message}"
+#2 ConcreteComponent (core behaviour)
 
+class ConcreteComponent(Component):
+    def execute(self):
+        return "core"
+    
+#3 BaseDecorator (is-a compnent , has-a component)
+class BaseDecorator(Component):
+    def __init__(self, wrapped: Component):
+        self.wrapped = wrapped # has-a relationship
+        
+    def execute(self):
+        return self.wrapped.execute()
+        
 
-class NotifierDecorator(Notifier):
-    def __init__(self, wrappee):
-        self.wrappee = wrappee
+#4 ConcreteDecorator A (adds behavior)
+class ConcreteDecoratorA(BaseDecorator):
+    def execute(self):
+        before = "A(before)"
+        core = super().execute()
+        after = "A(after)"
+        return f"{before} -> {core} -> {after} "
+    
+#4 ConcreteDecorator B (adds behavior)
+class ConcreteDecoratorB(BaseDecorator):
+    def execute(self):
+        core = super().execute()
+        return f"{core} + B(extra) "
+    
+    def otherMethod(self):
+        return "B Specific method"
 
-    def send(self, message):
-        return self.wrappee.send(message)
+class demo():
+    base = ConcreteComponent()
+    print("Base:", base.execute())
+    
+    # wrap base with A
+    a = ConcreteDecoratorA(base)
+    print("A(base)", a.execute())
 
-
-class SMSDecorator(NotifierDecorator):
-    def send(self, message):
-        base = super().send(message)
-        return f"{base} + SMS"
-
-
-def demo():
-    notifier = SMSDecorator(EmailNotifier())
-    print(notifier.send("hi"))
-
-
-if __name__ == "__main__":
+    # stack decorators: A wraps B wraps base
+    stacked = ConcreteDecoratorA(ConcreteDecoratorB(base))
+    print("A(b(base))", stacked.execute())
+    
+if __name__ == "__main__":   
     demo()
+    
