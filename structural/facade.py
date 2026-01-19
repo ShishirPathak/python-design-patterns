@@ -5,35 +5,48 @@ When to use: You want to hide complexity behind a simple API.
 When not to use: The subsystem is already simple or needs full control.
 """
 
-class CPU:
-    def start(self):
-        return "CPU started"
 
+class AuthService:
+    def authenticate(self, userid, user_pass):
+        return f"Loggedin User: {userid}"
 
-class Memory:
-    def load(self):
-        return "Memory loaded"
+class TokenService:
+    def issue_token(self, userid):
+        return f"token for user: {userid} is usertoken::123"
 
+class PermissionService:
+    def has_permission(self, userid, resource):
+        return f"user: {userid}, has access to dashboard"
 
-class Disk:
-    def read(self):
-        return "Disk read"
+class NotificationService:
+    def send_login_alert(self, userid):
+        print(f"[Notify] login alert sent to {userid}")
 
-
-class ComputerFacade:
+class SecurityFacade:
+    
     def __init__(self):
-        self.cpu = CPU()
-        self.memory = Memory()
-        self.disk = Disk()
-
-    def start(self):
-        return ", ".join([self.cpu.start(), self.memory.load(), self.disk.read()])
-
-
+        self.auth = AuthService()
+        self.token = TokenService()
+        self.perms = PermissionService()
+        self.notify = NotificationService()
+        
+    def login(self, userid, password, resource):
+        if not self.auth.authenticate(userid,password):
+            return False
+        
+        if not self.perms.has_permission(userid, resource):
+            return False
+        
+        self.notify.send_login_alert(userid)
+        return self.token.issue_token(userid)
+    
 def demo():
-    computer = ComputerFacade()
-    print(computer.start())
-
-
+    facade = SecurityFacade()
+    token = facade.login("user1", "password", "dashboard")
+    print(token)
 if __name__ == "__main__":
     demo()
+            
+        
+    
+    
