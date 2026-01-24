@@ -7,27 +7,25 @@ When not to use: You can change the existing class directly.
 
 class LegacyPrinter:
     def print_text(self, text):
-        return f"Legacy: {text}"
-
+        return f"legacy: {text}"
 
 class Printer:
     def print(self, text):
         raise NotImplementedError
-
-
-class PrinterAdapter(Printer):
+    
+class AdapterLegacy(Printer):
     def __init__(self, legacy):
         self.legacy = legacy
-
+        
     def print(self, text):
-        return self.legacy.print_text(text)
-
+        self.legacy.print_text(text)
+        
 
 def demo():
     legacy = LegacyPrinter()
-    adapter = PrinterAdapter(legacy)
-    print(adapter.print("hello"))
-
+    adapter =AdapterLegacy(legacy)
+    print(adapter.print("Hello"))   
 
 if __name__ == "__main__":
     demo()
+    

@@ -5,39 +5,62 @@ When to use: You want to mix and match abstractions and implementations.
 When not to use: There is only one implementation and no need for flexibility.
 """
 
-class Renderer:
-    def render(self, shape_name):
-        raise NotImplementedError
+from abc import ABC, abstractmethod
+
+#implementor
+class NotificationSender(ABC):
+    @abstractmethod
+    def send(self, message: str, to: str) -> str:
+        pass
+
+# concrete implementors
+class EmailSender(NotificationSender):
+    def send(self, message: str, to: str) -> str:
+        return f"Email to {to}: {message}"
+
+class SMSSender(NotificationSender):
+    def send(self, message: str, to: str) -> str:
+        return f"SMS to {to}: {message}"
+
+class PUSHSender(NotificationSender):
+    def send(self, message: str, to: str) -> str:
+        return f"Push to {to}: {message}"
 
 
-class RasterRenderer(Renderer):
-    def render(self, shape_name):
-        return f"Raster {shape_name}"
+# Abstraction
 
+class Notification(ABC):
+    def __init__(self, sender: NotificationSender):
+        self.sender = sender
+    
+    @abstractmethod
+    def notify(self, to: str) -> str:
+        pass    
 
-class VectorRenderer(Renderer):
-    def render(self, shape_name):
-        return f"Vector {shape_name}"
+class AlertNotification(Notification):
+    def notify(self, to: str) -> str:
+        return self.sender.send("Security alert detected ", to)
 
+class OTPNotification(Notification):
+    def notify(self, to: str) -> str:
+        return self.sender.send("Your OTP is 43524836", to)
 
-class Shape:
-    def __init__(self, renderer):
-        self.renderer = renderer
+class ReminderNotification(Notification):
+    def notify(self, to: str) -> str:
+        return self.sender.send("Meeting at 5 PM", to)
 
-    def draw(self):
-        raise NotImplementedError
-
-
-class Circle(Shape):
-    def draw(self):
-        return self.renderer.render("circle")
-
+# Demo
 
 def demo():
-    for renderer in (RasterRenderer(), VectorRenderer()):
-        shape = Circle(renderer)
-        print(shape.draw())
-
-
+    
+    sms = SMSSender()
+    email = EmailSender()
+    
+    otp_sms = OTPNotification(sms)
+    alert_email = AlertNotification(email)
+    
+    print(otp_sms.notify("+1 - 774 -503-88**"))
+    print(alert_email.notify("user@gmail.com"))
+    
 if __name__ == "__main__":
     demo()
